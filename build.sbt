@@ -10,6 +10,7 @@ scalaVersion := "2.12.4"
 libraryDependencies += guice
 libraryDependencies += javaJdbc
 libraryDependencies += "com.h2database" % "h2" % "1.4.196"
+libraryDependencies += "org.mindrot" % "jbcrypt" % "0.4"
 
 EclipseKeys.preTasks := Seq(compile in Compile, compile in Test)
 EclipseKeys.projectFlavor := EclipseProjectFlavor.Java           // Java project. Don't expect Scala IDE
