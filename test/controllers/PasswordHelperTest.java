@@ -15,21 +15,21 @@ public class PasswordHelperTest {
 	 */
 	private void assertHash(String temporaryCode) {
 		final PasswordHelper password = new PasswordHelper();
-		Assert.assertNull("インスタンス生成直後は平文の仮パスワードは null である", password.plainTemporary);
-		Assert.assertNull("インスタンス生成直後は平文パスワードは null である", password.plain);
+		Assert.assertNull("インスタンス生成直後は平文の仮パスワードは null である。", password.plainTemporary);
+		Assert.assertNull("インスタンス生成直後は平文パスワードは null である。", password.plain);
 		final String hashed = password.hash(temporaryCode);
-		Assert.assertNotNull("ハッシュ化したら平文の仮パスワードが設定される", password.plainTemporary);
-		Assert.assertNotNull("ハッシュ化したら平文パスワードが設定される", password.plain);
-		Assert.assertEquals("ハッシュ化した結果は60桁固定である", 60, hashed.length());
-		Assert.assertEquals("ハッシュ化した最初の文字は $ である", '$', hashed.charAt(0));
-		Assert.assertTrue("同じ仮登録コードと仮パスワードはハッシュ化した文字列と同等となる", password.equal(temporaryCode, password.plainTemporary, hashed));
-		Assert.assertFalse("違う仮登録コードの場合はハッシュ化した文字列も異なる", password.equal("x" + temporaryCode, password.plainTemporary, hashed));
-		Assert.assertFalse("違う仮登録コードの場合はハッシュ化した文字列も異なる", password.equal(temporaryCode + "x", password.plainTemporary, hashed));
-		Assert.assertFalse("違う仮パスワードの場合はハッシュ化した文字列も異なる", password.equal(temporaryCode, "x" + password.plainTemporary, hashed));
-		Assert.assertFalse("違う仮パスワードの場合はハッシュ化した文字列も異なる", password.equal(temporaryCode, password.plainTemporary + "x", hashed));
-		Assert.assertTrue("同じ平文パスワードならハッシュ化した文字列と同等となる", password.equal(password.plain, hashed));
-		Assert.assertFalse("異なる平文パスワードの場合はハッシュ化した文字列も異なる", password.equal("x" + password.plain, hashed));
-		Assert.assertFalse("異なる平文パスワードの場合はハッシュ化した文字列も異なる", password.equal(password.plain + "x", hashed));
+		Assert.assertNotNull("ハッシュ化したら平文の仮パスワードが設定される。", password.plainTemporary);
+		Assert.assertNotNull("ハッシュ化したら平文パスワードが設定される。", password.plain);
+		Assert.assertEquals("ハッシュ化した結果は60桁固定である。", 60, hashed.length());
+		Assert.assertEquals("ハッシュ化した最初の文字は $ である。", '$', hashed.charAt(0));
+		Assert.assertTrue("同じ仮登録コードと仮パスワードはハッシュ化した文字列と同等となる。", password.equal(temporaryCode, password.plainTemporary, hashed));
+		Assert.assertFalse("違う仮登録コードの場合はハッシュ化した文字列も異なる。", password.equal("x" + temporaryCode, password.plainTemporary, hashed));
+		Assert.assertFalse("違う仮登録コードの場合はハッシュ化した文字列も異なる。", password.equal(temporaryCode + "x", password.plainTemporary, hashed));
+		Assert.assertFalse("違う仮パスワードの場合はハッシュ化した文字列も異なる。", password.equal(temporaryCode, "x" + password.plainTemporary, hashed));
+		Assert.assertFalse("違う仮パスワードの場合はハッシュ化した文字列も異なる。", password.equal(temporaryCode, password.plainTemporary + "x", hashed));
+		Assert.assertTrue("同じ平文パスワードならハッシュ化した文字列と同等となる。", password.equal(password.plain, hashed));
+		Assert.assertFalse("異なる平文パスワードの場合はハッシュ化した文字列も異なる。", password.equal("x" + password.plain, hashed));
+		Assert.assertFalse("異なる平文パスワードの場合はハッシュ化した文字列も異なる。", password.equal(password.plain + "x", hashed));
 		final String hashed2 = password.hash(temporaryCode + "2");
 		Assert.assertNotEquals("異なる値をハッシュ化すれば結果が異なる。", hashed, hashed2);
 		final String hashed3 = password.hash(temporaryCode);
