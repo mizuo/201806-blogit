@@ -5,20 +5,26 @@ import org.mindrot.jbcrypt.BCrypt;
 /**
  * パスワードヘルパーです。
  * 仮パスワードの生成とハッシュ化処理を支援します。
- * 仮パスワードは 8 文字から 16 文字の長さのランダムな英数字が生成されます。
+ * このクラスで登場する主な用語は次の通りです。
+ * <dl>
+ * <dt>仮登録コード</dt><dd>利用者が任意に設定する 16 字以内の任意の文字列</dd>
+ * <dt>仮パスワード</dt><dd>このクラスが自動生成する 8 文字から 16 文字の長さのランダムな英数字</dd>
+ * <dt>仮登録パスワード</dt><dd>仮登録コードと仮パスワードを結合した文字列</dd>
+ * <dt>パスワード</dt><dd>ログイン処理で使用する文字列</dd>
+ * </dl>
  * 16 文字を超えた仮登録コードの場合は動作保証しません。
  * @author mizuo
  */
 class PasswordHelper {
 
-	/** 平文の仮パスワード */
+	/** 仮パスワード */
 	String plainTemporary;
-	/** 平文パスワード */
+	/** 仮登録パスワード */
 	String plain;
 
 	/**
-	 * {@link #plainTemporary 平文の仮パスワード} を再生成します。
-	 * @return 平文の仮パスワード
+	 * {@link #plainTemporary 仮パスワード} を再生成します。
+	 * @return 仮パスワード
 	 */
 	@SuppressWarnings("deprecation")
 	private String resetPlainTemporary() {
@@ -26,14 +32,14 @@ class PasswordHelper {
 		return this.plainTemporary;
 	}
 
-	/** 平文パスワードの初期値用フォーマット */
+	/** 仮登録パスワードのフォーマット */
 	private static final String INITIALIZE_FORMAT = "%s%s%s";
 
 	/**
-	 * 平文パスワードの初期値を生成します。
+	 * 仮登録パスワードを生成します。
 	 * @param temporaryCode 仮登録コード
-	 * @param plainTemporary 平文の仮パスワード
-	 * @return 平文パスワードの初期値
+	 * @param plainTemporary 仮パスワード
+	 * @return 仮登録パスワード
 	 */
 	private String createPlain(String temporaryCode, String plainTemporary) {
 		final String plain = String.format(INITIALIZE_FORMAT, temporaryCode, plainTemporary, temporaryCode);
@@ -41,10 +47,10 @@ class PasswordHelper {
 	}
 
 	/**
-	 * {@link #plain 平文パスワード} を再設定します。
+	 * {@link #plain 仮登録パスワード} を再設定します。
 	 * @param temporaryCode 仮登録コード
-	 * @param plainTemporary 平文の仮パスワード
-	 * @return 平文パスワード
+	 * @param plainTemporary 仮パスワード
+	 * @return 仮登録パスワード
 	 */
 	private String resetPlain(String temporaryCode, String plainTemporary) {
 		this.plainTemporary = plainTemporary;
@@ -53,11 +59,11 @@ class PasswordHelper {
 	}
 
 	/**
-	 * 仮登録コードと再生成した {@link #plainTemporaryPassword 平文の仮パスワード} を組み合わせた
-	 * {@link #plain 平文パスワード} を設定しハッシュ化します。
+	 * 仮登録コードと再生成した {@link #plainTemporaryPassword 仮パスワード} を組み合わせた
+	 * {@link #plain 仮登録パスワード} を設定しハッシュ化します。
 	 * 16 文字を超えた仮登録コードの場合は動作保証しません。
 	 * @param temporaryCode 仮登録コード
-	 * @return ハッシュ化した文字列
+	 * @return 仮登録パスワードをハッシュ化した文字列
 	 */
 	String hash(String temporaryCode) {
 		final String salt = BCrypt.gensalt();
@@ -68,10 +74,10 @@ class PasswordHelper {
 	}
 
 	/**
-	 * ハッシュ化した場合に一致し得るか判定します。
+	 * 仮登録コードと仮パスワードを組み合わせた仮登録パスワードをハッシュ化した結果が一致するか判定します。
 	 * @param temporaryCode 仮登録コード
-	 * @param plainTemporary 平文の仮パスワード
-	 * @param hashed ハッシュ化した文字列
+	 * @param plainTemporary 仮パスワード
+	 * @param hashed 仮登録パスワードをハッシュ化した文字列
 	 * @return 一致する場合 true 
 	 */
 	boolean equal(String temporaryCode, String plainTemporary, String hashed) {
@@ -80,9 +86,9 @@ class PasswordHelper {
 	}
 
 	/**
-	 * ハッシュ化した場合に一致し得るか判定します。
-	 * @param plain 平文パスワード
-	 * @param hashed ハッシュ化した文字列
+	 * パスワードをハッシュ化した結果が一致するか判定します。
+	 * @param plain パスワード
+	 * @param hashed パスワードをハッシュ化した文字列
 	 * @return 一致する場合 true 
 	 */
 	boolean equal(String plain, String hashed) {
