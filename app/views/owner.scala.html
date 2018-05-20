@@ -1,0 +1,24 @@
+@(ownerForm: Form[OwnerController.OwnerAccount])
+@import helper._
+@main(title=Messages("owner")) {
+	@if(ownerForm.hasGlobalErrors) {
+	<ul>
+		@for(error <- ownerForm.globalErrors) {
+		<li>@error.format(messages())</li>
+		}
+	</ul>
+	} else {
+		@if(flash.get("message") != null){
+	<p>@flash.get("message")</p>
+		}
+		<ul>
+			<li>@Messages("所有者アカウントが未登録です。")</li>
+			<li>@Messages("所有者宛に仮登録メールを送信してアカウント登録を行って下さい。")</li>
+		</ul>
+		@form(routes.OwnerController.post) {
+			@CSRF.formField
+			@inputPassword(ownerForm("temporaryCode"))
+			<input type="submit" value="@Messages("仮登録メールを送信する")" >
+		}
+	}
+}
