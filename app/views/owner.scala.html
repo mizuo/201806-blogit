@@ -17,7 +17,7 @@
 		</ul>
 		@form(routes.OwnerController.post) {
 			@CSRF.formField
-			@inputPassword(ownerForm("temporaryCode"))
+			@inputText(ownerForm("temporaryCode"))
 			<input type="submit" value="@Messages("仮登録メールを送信する")" >
 		}
 	}

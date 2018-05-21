@@ -17,9 +17,9 @@ import io.ebean.Model;
 @Entity
 public class Applicant extends Model {
 
-	/** 電子メールアドレス */
+	/** メールアドレス */
 	@Id
-	@Column(unique=true, length=255)
+	@Column(length=255)
 	@NotNull
 	public String emailAddress;
 
@@ -33,9 +33,9 @@ public class Applicant extends Model {
 	public Date applied;
 
 	/**
-	 * 引数の電子メールアドレスの登録行を取得します。
-	 * 未登録の場合は引数の電子メールアドレスをセットした申込者を返します。
-	 * @param emailAddress 電子メールアドレス
+	 * 引数のメールアドレスの登録行を取得します。
+	 * 未登録の場合は引数のメールアドレスをセットした申込者を返します。
+	 * @param emailAddress メールアドレス
 	 * @return 申込者
 	 */
 	public static Applicant findOne(String emailAddress) {

@@ -17,7 +17,7 @@ public class Account extends Model {
 
 	/** ログインID */
 	@Id
-	@Column(unique=true, length=255)
+	@Column(length=255)
 	@NotNull
 	public String loginId;
 

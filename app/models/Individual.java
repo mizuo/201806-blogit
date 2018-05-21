@@ -22,7 +22,7 @@ public class Individual extends Model {
 	@NotNull
 	public Long id;
 
-	/** 電子メールアドレス */
+	/** メールアドレス */
 	@Column(length=255)
 	@NotNull
 	public String emailAddress;
@@ -35,7 +35,7 @@ public class Individual extends Model {
 	@NotNull
 	public Date joined;
 
-	/** 電子メールアドレスがアカウントテーブルと個人テーブルでの登録件数を取得するSQLです。 */
+	/** メールアドレスがアカウントテーブルと個人テーブルでの登録件数を取得するSQLです。 */
 	private static final String UNIQUE_EMAIL_ADDRESS_SQL = " SELECT COUNT(*) AS counter FROM ("
 			+ " SELECT email_address FROM individual where email_address = :emailAddress"
 			+ " UNION ALL "
@@ -43,7 +43,7 @@ public class Individual extends Model {
 			+ ") A";
 
 	/**
-	 * 保持している電子メールアドレスが使用済みであるか判定します。
+	 * 保持しているメールアドレスが使用済みであるか判定します。
 	 * @return 使用済みである場合 true
 	 */
 	public boolean isUsedEmailAddress() {

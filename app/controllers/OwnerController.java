@@ -1,18 +1,22 @@
 package controllers;
 
 import java.util.Date;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
 import com.typesafe.config.Config;
 
 import models.Applicant;
+import models.EmailTemplate;
 import models.Individual;
 import play.data.Form;
 import play.data.FormFactory;
 import play.data.validation.Constraints.MaxLength;
 import play.data.validation.Constraints.MinLength;
 import play.data.validation.Constraints.Required;
+import play.libs.mailer.Email;
+import play.libs.mailer.MailerClient;
 import play.mvc.Controller;
 import play.mvc.Http.Request;
 import play.mvc.Result;
@@ -27,6 +31,8 @@ public class OwnerController extends Controller {
 
 	/** 設定 */
 	private final Config config;
+	/** メールクライアント */
+	private final MailerClient mailerClient;
 	/** フォーム製造 */
 	private final FormFactory formFactory;
 
@@ -35,14 +41,15 @@ public class OwnerController extends Controller {
 	 * @param formFactory フォーム製造
 	 */
 	@Inject
-	public OwnerController(Config config, FormFactory formFactory) {
+	public OwnerController(Config config, MailerClient mailerClient, FormFactory formFactory) {
 		this.config = config;
+		this.mailerClient = mailerClient;
 		this.formFactory = formFactory;
 	}
 
 	/**
-	 * 設定で定義された電子メールアドレスを取得します。
-	 * @return 設定で定義された電子メールアドレス
+	 * 設定で定義された所有者のメールアドレスを取得します。
+	 * @return 設定で定義された所有者のメールアドレス
 	 */
 	private String getConfigEmailAddress() {
 		return config.getString("owner.emailAddress");
@@ -81,7 +88,7 @@ public class OwnerController extends Controller {
 		if (ownerForm.hasErrors()) {
 			return badRequest(views.html.owner.render(ownerForm));
 		} else {
-			// 電子メールアドレスの一意チェックをする。
+			// メールアドレスの一意チェックをする。
 			final String configEmailAddress = getConfigEmailAddress();
 			final Individual individual = new Individual();
 			individual.emailAddress = configEmailAddress;
@@ -100,7 +107,12 @@ public class OwnerController extends Controller {
 				applicant.password = hashed;
 				applicant.applied = requested;
 				// 仮パスワードの一部をメール送信する
-				// FIXME …
+				final Optional<Email> email = EmailTemplate.createOwnerTemporaryRegistration(configEmailAddress, password.plainTemporary);
+				if (email.isPresent()) {
+					mailerClient.send(email.get());
+				} else {
+					return internalServerError(views.html.owner.render(ownerForm));
+				}
 				// 登録する
 				applicant.save();
 				return redirect(routes.ActivationController.get());

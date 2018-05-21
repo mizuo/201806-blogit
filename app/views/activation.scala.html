@@ -17,7 +17,7 @@
 		</ul>
 		@form(routes.ActivationController.post) {
 			@CSRF.formField
-			@inputPassword(activationForm("temporaryCode"))
+			@inputText(activationForm("temporaryCode"))
 			@inputPassword(activationForm("temporaryPassword"))
 			<input type="submit" value="@Messages("本登録する")" >
 		}
