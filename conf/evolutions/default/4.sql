@@ -7,4 +7,4 @@ insert into email_template (code, subject, body, registered) values (
 
 # --- !Downs
 
-delete from email_template where code = ;
+delete from email_template where code = 'createOwnerTemporaryRegistration';
