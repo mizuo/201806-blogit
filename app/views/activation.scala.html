@@ -1,4 +1,4 @@
-@(activationForm: Form[ActivationController.TemporaryAccount])
+@(activationForm: Form[ActivationController.ActivationAccount])
 @import helper._
 @main(title=Messages("activation")) {
 	@if(activationForm.hasGlobalErrors) {
@@ -13,12 +13,17 @@
 		}
 		<ul>
 			<li>@Messages("アカウントは仮登録のままです。")</li>
-			<li>@Messages("仮登録時に入力した仮登録コードと、仮登録メールに記載されている仮パスワードを入力してアカウントの本登録を行って下さい。")</li>
+			<li>@Messages("仮登録時に入力した仮登録コードと、仮登録メールに記載されている仮パスワードを入力してください。")</li>
 		</ul>
 		@form(routes.ActivationController.post) {
 			@CSRF.formField
+			@inputText(activationForm("emailAddress"))
 			@inputText(activationForm("temporaryCode"))
-			@inputPassword(activationForm("temporaryPassword"))
+			@inputText(activationForm("temporaryPassword"))
+			<ul>
+				<li>@Messages("ログイン用のパスワードを新たに設定してください。")</li>
+			</ul>
+			@inputPassword(activationForm("password"))
 			<input type="submit" value="@Messages("本登録する")" >
 		}
 	}

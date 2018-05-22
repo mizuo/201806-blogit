@@ -2,6 +2,7 @@ package controllers;
 
 import javax.inject.Inject;
 
+import models.Individual;
 import play.data.Form;
 import play.data.FormFactory;
 import play.data.validation.Constraints.MaxLength;
@@ -10,50 +11,71 @@ import play.mvc.Controller;
 import play.mvc.Result;
 
 /**
- * アカウント活性化コントローラーです。
+ * アカウント本登録コントローラーです。
  * 仮登録アカウントから本登録を行うページを制御します。
  * @author mizuo
  */
 public class ActivationController extends Controller {
 
+	/** 設定ヘルパー */
+	private final ConfigHelper configHelper;
 	/** フォーム製造 */
 	private final FormFactory formFactory;
 
 	/**
+	 * @param configHelper 設定ヘルパー
+	 * @param mailerClient メールクライアント
 	 * @param formFactory フォーム製造
 	 */
 	@Inject
-	public ActivationController(FormFactory formFactory) {
+	public ActivationController(ConfigHelper configHelper, FormFactory formFactory) {
+		this.configHelper = configHelper;
 		this.formFactory = formFactory;
 	}
 
 	/**
 	 * GET アクセスを制御します。
-	 * @return アカウント活性化ページ
+	 * @return アカウント本登録ページ
 	 */
 	public Result get() {
-		final Form<TemporaryAccount> temporaryForm = formFactory.form(TemporaryAccount.class);
-		return ok(views.html.activation.render(temporaryForm));
+		final Form<ActivationAccount> activationForm = formFactory.form(ActivationAccount.class);
+		return ok(views.html.activation.render(activationForm));
 	}
 
 	/**
 	 * POST アクセスを制御します。
-	 * @return アカウント活性化ページ
+	 * @return アカウント本登録ページ
 	 */
 	public Result post() {
-		final Form<TemporaryAccount> temporaryForm = formFactory.form(TemporaryAccount.class).bindFromRequest();
-		if (temporaryForm.hasErrors()) {
-			return badRequest(views.html.activation.render(temporaryForm));
+//		final Date requestedAt = new Date();
+		final Form<ActivationAccount> activationForm = formFactory.form(ActivationAccount.class).bindFromRequest();
+		if (activationForm.hasErrors()) {
+			return badRequest(views.html.activation.render(activationForm));
 		} else {
-			return ok(views.html.activation.render(temporaryForm));
+			// メールアドレスの一意チェックをする。
+			final String configEmailAddress = configHelper.getConfigEmailAddress();
+			final Individual individual = new Individual();
+			individual.emailAddress = configEmailAddress;
+			if (individual.isUsedEmailAddress()) {
+				// 登録済みの場合は競合扱いとする。
+				return status(CONFLICT, views.html.activation.render(activationForm));
+			} else {
+				// TODO 仮登録コードをリクエストから抽出する。
+				//  …
+				return redirect(routes.HomeController.index());
+			}
 		}
 	}
 
 	/**
-	 * 仮登録アカウントです。
+	 * 本登録アカウントです。
 	 * @author mizuo
 	 */
-	public static class TemporaryAccount {
+	public static class ActivationAccount {
+		/** メールアドレス */
+		@Required
+		@MaxLength(255)
+		public String emailAddress;
 		/** 仮登録コード */
 		@Required
 		@MaxLength(8)
@@ -61,6 +83,9 @@ public class ActivationController extends Controller {
 		/** 仮パスワード */
 		@Required
 		public String temporaryPassword;
+		/** パスワード */
+		@Required
+		public String password;
 	}
 
 }

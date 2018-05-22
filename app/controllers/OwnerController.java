@@ -5,8 +5,6 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
-import com.typesafe.config.Config;
-
 import models.Applicant;
 import models.EmailTemplate;
 import models.Individual;
@@ -29,30 +27,23 @@ import play.mvc.Result;
  */
 public class OwnerController extends Controller {
 
-	/** 設定 */
-	private final Config config;
-	/** メールクライアント */
-	private final MailerClient mailerClient;
+	/** 設定ヘルパー */
+	private final ConfigHelper configHelper;
 	/** フォーム製造 */
 	private final FormFactory formFactory;
+	/** メールクライアント */
+	private final MailerClient mailerClient;
 
 	/**
-	 * @param config 設定
+	 * @param configHelper 設定ヘルパー
 	 * @param formFactory フォーム製造
+	 * @param mailerClient メールクライアント
 	 */
 	@Inject
-	public OwnerController(Config config, MailerClient mailerClient, FormFactory formFactory) {
-		this.config = config;
-		this.mailerClient = mailerClient;
+	public OwnerController(ConfigHelper configHelper, FormFactory formFactory, MailerClient mailerClient) {
+		this.configHelper = configHelper;
 		this.formFactory = formFactory;
-	}
-
-	/**
-	 * 設定で定義された所有者のメールアドレスを取得します。
-	 * @return 設定で定義された所有者のメールアドレス
-	 */
-	private String getConfigEmailAddress() {
-		return config.getString("owner.emailAddress");
+		this.mailerClient = mailerClient;
 	}
 
 	/**
@@ -62,7 +53,7 @@ public class OwnerController extends Controller {
 	 * @return 所有者ページ
 	 */
 	public Result get() {
-		final String configEmailAddress = getConfigEmailAddress();
+		final String configEmailAddress = configHelper.getConfigEmailAddress();
 		final Individual individual = new Individual();
 		individual.emailAddress = configEmailAddress;
 		if (individual.isUsedEmailAddress()) {
@@ -83,13 +74,13 @@ public class OwnerController extends Controller {
 	 * @return 所有者ページ
 	 */
 	public Result post() {
-		final Date requested = new Date();
+		final Date requestedAt = new Date();
 		final Form<OwnerAccount> ownerForm = formFactory.form(OwnerAccount.class).bindFromRequest();
 		if (ownerForm.hasErrors()) {
 			return badRequest(views.html.owner.render(ownerForm));
 		} else {
 			// メールアドレスの一意チェックをする。
-			final String configEmailAddress = getConfigEmailAddress();
+			final String configEmailAddress = configHelper.getConfigEmailAddress();
 			final Individual individual = new Individual();
 			individual.emailAddress = configEmailAddress;
 			if (individual.isUsedEmailAddress()) {
@@ -105,7 +96,7 @@ public class OwnerController extends Controller {
 				// 申込者
 				final Applicant applicant = Applicant.findOne(configEmailAddress);
 				applicant.password = hashed;
-				applicant.applied = requested;
+				applicant.appliedAt = requestedAt;
 				// 仮パスワードの一部をメール送信する
 				final Optional<Email> email = EmailTemplate.createOwnerTemporaryRegistration(configEmailAddress, password.plainTemporary);
 				if (email.isPresent()) {

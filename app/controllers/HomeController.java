@@ -11,7 +11,7 @@ import play.mvc.Result;
 public class HomeController extends Controller {
 
 	/**
-	 * インデックスページへの GET アクセスを制御します。
+	 * GET アクセスを制御します。
 	 * @return インデックスページ
 	 */
 	public Result index() {

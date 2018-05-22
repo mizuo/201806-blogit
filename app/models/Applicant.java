@@ -9,6 +9,7 @@ import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
 
 import io.ebean.Model;
+import io.ebean.annotation.CreatedTimestamp;
 
 /**
  * 申込者です。
@@ -30,7 +31,8 @@ public class Applicant extends Model {
 
 	/** 申込日時 */
 	@NotNull
-	public Date applied;
+	@CreatedTimestamp
+	public Date appliedAt;
 
 	/**
 	 * 引数のメールアドレスの登録行を取得します。

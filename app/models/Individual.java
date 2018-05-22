@@ -4,10 +4,8 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
 
-import io.ebean.Model;
 import io.ebean.SqlRow;
 
 /**
@@ -15,12 +13,7 @@ import io.ebean.SqlRow;
  * @author mizuo
  */
 @Entity
-public class Individual extends Model {
-
-	/** ID */
-	@Id
-	@NotNull
-	public Long id;
+public class Individual extends CrudModel {
 
 	/** メールアドレス */
 	@Column(length=255)
@@ -29,13 +22,9 @@ public class Individual extends Model {
 
 	/** 申込日時 */
 	@NotNull
-	public Date applied;
+	public Date appliedAt;
 
-	/** 加入日時 */
-	@NotNull
-	public Date joined;
-
-	/** メールアドレスがアカウントテーブルと個人テーブルでの登録件数を取得するSQLです。 */
+	/** アカウントテーブルと個人テーブルでのメールアドレス登録件数を取得するSQLです。 */
 	private static final String UNIQUE_EMAIL_ADDRESS_SQL = " SELECT COUNT(*) AS counter FROM ("
 			+ " SELECT email_address FROM individual where email_address = :emailAddress"
 			+ " UNION ALL "

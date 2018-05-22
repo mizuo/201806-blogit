@@ -1,13 +1,11 @@
 package models;
 
-import java.util.Date;
 import java.util.Optional;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
 
-import io.ebean.Model;
 import play.libs.mailer.Email;
 
 /**
@@ -15,10 +13,10 @@ import play.libs.mailer.Email;
  * @author mizuo
  */
 @Entity
-public class EmailTemplate extends Model {
+public class EmailTemplate extends CrudModel {
 
 	/** 雛形コード */
-	@Id
+	@Column(unique=true)
 	@NotNull
 	public String code;
 
@@ -30,10 +28,6 @@ public class EmailTemplate extends Model {
 	@NotNull
 	public String body;
 
-	/** 登録日時 */
-	@NotNull
-	public Date registered;
-
 	/**
 	 * 仮登録メールを取得します。
 	 * 雛形が登録されていない場合は、null を返します。
@@ -42,7 +36,7 @@ public class EmailTemplate extends Model {
 	 * @return 仮登録メール
 	 */
 	public static Optional<Email> createOwnerTemporaryRegistration(String ownerEmailAddress, String temporaryPassword) {
-		final Optional<EmailTemplate> stored = db().find(EmailTemplate.class).where().eq("code", "createOwnerTemporaryRegistration").findOneOrEmpty();
+		final Optional<EmailTemplate> stored = db().find(EmailTemplate.class).where().eq("code", "owner").findOneOrEmpty();
 		if (stored.isPresent()) {
 			final EmailTemplate template = stored.get();
 			final Email email = new Email()
