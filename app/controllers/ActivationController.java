@@ -38,7 +38,7 @@ public class ActivationController extends Controller {
 	 * @return アカウント本登録ページ
 	 */
 	public Result get() {
-		final Form<ActivationAccount> activationForm = formFactory.form(ActivationAccount.class);
+		final Form<ActivationParameter> activationForm = formFactory.form(ActivationParameter.class);
 		return ok(views.html.activation.render(activationForm));
 	}
 
@@ -48,10 +48,10 @@ public class ActivationController extends Controller {
 	 */
 	public Result post() {
 //		final Date requestedAt = new Date();
-		final Form<ActivationAccount> activationForm = formFactory.form(ActivationAccount.class).bindFromRequest();
+		final Form<ActivationParameter> activationForm = formFactory.form(ActivationParameter.class).bindFromRequest();
 		if (activationForm.hasErrors()) {
 			return badRequest(views.html.activation.render(activationForm));
-		} else {
+			} else {
 			// メールアドレスの一意チェックをする。
 			final String configEmailAddress = configHelper.getConfigEmailAddress();
 			final Individual individual = new Individual();
@@ -68,10 +68,10 @@ public class ActivationController extends Controller {
 	}
 
 	/**
-	 * 本登録アカウントです。
+	 * アカウント本登録の変数群です。
 	 * @author mizuo
 	 */
-	public static class ActivationAccount {
+	public static class ActivationParameter {
 		/** メールアドレス */
 		@Required
 		@MaxLength(255)

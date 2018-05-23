@@ -20,7 +20,7 @@ import play.mvc.Http.Request;
 import play.mvc.Result;
 
 /**
- * 所有者コントローラーです。
+ * 所有者アカウント登録コントローラーです。
  * 最初のアカウントを登録するページを制御します。
  * アカウントが本登録された後はアクセス不能となります。
  * @author mizuo
@@ -61,7 +61,7 @@ public class OwnerController extends Controller {
 			return gone();
 		} else {
 			// 所有者アカウントが登録されていない場合のみアクセス可能とする。
-			final Form<OwnerAccount> ownerForm = formFactory.form(OwnerAccount.class);
+			final Form<OwnerParameter> ownerForm = formFactory.form(OwnerParameter.class);
 			return ok(views.html.owner.render(ownerForm));
 		}
 	}
@@ -75,7 +75,7 @@ public class OwnerController extends Controller {
 	 */
 	public Result post() {
 		final Date requestedAt = new Date();
-		final Form<OwnerAccount> ownerForm = formFactory.form(OwnerAccount.class).bindFromRequest();
+		final Form<OwnerParameter> ownerForm = formFactory.form(OwnerParameter.class).bindFromRequest();
 		if (ownerForm.hasErrors()) {
 			return badRequest(views.html.owner.render(ownerForm));
 		} else {
@@ -88,8 +88,8 @@ public class OwnerController extends Controller {
 				return gone();
 			} else {
 				// 仮登録コードをリクエストから抽出する。
-				final OwnerAccount ownerAccount = ownerForm.get();
-				final String temporaryCode = ownerAccount.temporaryCode;
+				final OwnerParameter parameter = ownerForm.get();
+				final String temporaryCode = parameter.temporaryCode;
 				// 仮パスワードを生成する。
 				final PasswordHelper password = new PasswordHelper();
 				final String hashed = password.hash(temporaryCode);
@@ -124,10 +124,10 @@ public class OwnerController extends Controller {
 	}
 
 	/**
-	 * 所有者アカウントです。
+	 * 所有者アカウント登録の変数群です。
 	 * @author mizuo
 	 */
-	public static class OwnerAccount {
+	public static class OwnerParameter {
 		/** 仮登録コード */
 		@Required
 		@MinLength(4)
