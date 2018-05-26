@@ -36,12 +36,22 @@ public class Applicant extends Model {
 
 	/**
 	 * 引数のメールアドレスの登録行を取得します。
+	 * @param emailAddress メールアドレス
+	 * @return 申込者
+	 */
+	public static Optional<Applicant> findOneOrEmpty(String emailAddress) {
+		final Optional<Applicant> stored = db().find(Applicant.class).where().eq("email_address", emailAddress).findOneOrEmpty();
+		return stored;
+	}
+
+	/**
+	 * 引数のメールアドレスの登録行を取得します。
 	 * 未登録の場合は引数のメールアドレスをセットした申込者を返します。
 	 * @param emailAddress メールアドレス
 	 * @return 申込者
 	 */
 	public static Applicant findOne(String emailAddress) {
-		final Optional<Applicant> stored = db().find(Applicant.class).where().eq("email_address", emailAddress).findOneOrEmpty();
+		final Optional<Applicant> stored = findOneOrEmpty(emailAddress);
 		if (stored.isPresent()) {
 			return stored.get();
 		} else {

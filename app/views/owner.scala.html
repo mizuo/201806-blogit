@@ -7,18 +7,17 @@
 		<li>@error.format(messages())</li>
 		}
 	</ul>
-	} else {
-		@if(flash.get("message") != null){
+	} 
+	@if(flash.get("message") != null){
 	<p>@flash.get("message")</p>
-		}
-		<ul>
-			<li>@Messages("所有者アカウントが未登録です。")</li>
-			<li>@Messages("所有者宛に仮登録メールを送信してアカウント登録を行って下さい。")</li>
-		</ul>
-		@form(routes.OwnerController.post) {
-			@CSRF.formField
-			@inputText(ownerForm("temporaryCode"))
-			<input type="submit" value="@Messages("仮登録メールを送信する")" >
-		}
+	}
+	<ul>
+		<li>@Messages("所有者アカウントが未登録です。")</li>
+		<li>@Messages("所有者宛に仮登録メールを送信してアカウント登録を行って下さい。")</li>
+	</ul>
+	@form(routes.OwnerController.post) {
+		@CSRF.formField
+		@inputText(ownerForm("temporaryCode"))
+		<input type="submit" value="@Messages("仮登録メールを送信する")" >
 	}
 }

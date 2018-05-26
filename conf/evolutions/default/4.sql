@@ -1,10 +1,10 @@
 
 # --- !Ups
 
-insert into email_template (created_at, code, subject, body) values (
-	CURRENT_TIMESTAMP, 'owner', '[:blogit]owner temporary registration', 'temporaryPassword: :temporaryPassword'
+insert into email_template (code, subject, body, created_at, updated_at) values (
+	'owner', '[:blogit]owner temporary registration', 'temporaryPassword: :temporaryPassword', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 ), (
-	CURRENT_TIMESTAMP, 'activation', '[:blogit]activation', 'The register of the account completed.'
+	'activation', '[:blogit]activation', 'The register of the account completed.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 );
 
 

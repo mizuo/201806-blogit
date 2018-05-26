@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.validation.constraints.NotNull;
 
 import io.ebean.SqlRow;
+import io.ebean.annotation.CreatedTimestamp;
 
 /**
  * 個人です。
@@ -23,6 +24,11 @@ public class Individual extends CrudModel {
 	/** 申込日時 */
 	@NotNull
 	public Date appliedAt;
+
+	/** 加入日時 */
+	@NotNull
+	@CreatedTimestamp
+	public Date joinedAt;
 
 	/** アカウントテーブルと個人テーブルでのメールアドレス登録件数を取得するSQLです。 */
 	private static final String UNIQUE_EMAIL_ADDRESS_SQL = " SELECT COUNT(*) AS counter FROM ("

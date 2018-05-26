@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
 
 import play.libs.mailer.Email;
@@ -13,30 +14,42 @@ import play.libs.mailer.Email;
  * @author mizuo
  */
 @Entity
-public class EmailTemplate extends CrudModel {
+public class EmailTemplate extends TimestampModel {
 
 	/** 雛形コード */
-	@Column(unique=true)
+	@Id
+	@Column(length=64)
 	@NotNull
 	public String code;
 
 	/** 件名 */
+	@Column(length=255)
 	@NotNull
 	public String subject;
 
 	/** 本文 */
+	@Column(length=1024)
 	@NotNull
 	public String body;
 
 	/**
-	 * 仮登録メールを取得します。
-	 * 雛形が登録されていない場合は、null を返します。
+	 * 引数の雛形コードの登録行を取得します。
+	 * @param code 雛形コード
+	 * @return 電子メールの雛形
+	 */
+	private static Optional<EmailTemplate> findOneOrEmpty(String code) {
+		final Optional<EmailTemplate> stored = db().find(EmailTemplate.class).where().eq("code", code).findOneOrEmpty();
+		return stored;
+	}
+
+	/**
+	 * 仮登録メールを生成します。
 	 * @param ownerEmailAddress 所有者メールアドレス
 	 * @param temporaryPassword 仮パスワード
 	 * @return 仮登録メール
 	 */
-	public static Optional<Email> createOwnerTemporaryRegistration(String ownerEmailAddress, String temporaryPassword) {
-		final Optional<EmailTemplate> stored = db().find(EmailTemplate.class).where().eq("code", "owner").findOneOrEmpty();
+	public static Optional<Email> createOwner(String ownerEmailAddress, String temporaryPassword) {
+		final Optional<EmailTemplate> stored = findOneOrEmpty("owner");
 		if (stored.isPresent()) {
 			final EmailTemplate template = stored.get();
 			final Email email = new Email()
@@ -44,6 +57,27 @@ public class EmailTemplate extends CrudModel {
 					.setFrom(ownerEmailAddress)
 					.addTo(ownerEmailAddress)
 					.setBodyText(template.body.replaceAll(":temporaryPassword", temporaryPassword));
+			return Optional.of(email);
+		} else {
+			return Optional.empty();
+		}
+	}
+
+	/**
+	 * 本登録完了メールを生成します。
+	 * @param ownerEmailAddress 所有者メールアドレス
+	 * @param individualEmailAddress 個人メールアドレス
+	 * @return 本登録完了メール
+	 */
+	public static Optional<Email> createActivation(String ownerEmailAddress, String individualEmailAddress) {
+		final Optional<EmailTemplate> stored = findOneOrEmpty("activation");
+		if (stored.isPresent()) {
+			final EmailTemplate template = stored.get();
+			final Email email = new Email()
+					.setSubject(template.subject)
+					.setFrom(ownerEmailAddress)
+					.addTo(individualEmailAddress)
+					.setBodyText(template.body);
 			return Optional.of(email);
 		} else {
 			return Optional.empty();

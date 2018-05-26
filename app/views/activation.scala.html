@@ -7,24 +7,23 @@
 		<li>@error.format(messages())</li>
 		}
 	</ul>
-	} else {
-		@if(flash.get("message") != null){
+	}
+	@if(flash.get("message") != null){
 	<p>@flash.get("message")</p>
-		}
+	}
+	<ul>
+		<li>@Messages("アカウントは仮登録のままです。")</li>
+		<li>@Messages("仮登録時に入力した仮登録コードと、仮登録メールに記載されている仮パスワードを入力してください。")</li>
+	</ul>
+	@form(routes.ActivationController.post) {
+		@CSRF.formField
+		@inputText(activationForm("emailAddress"))
+		@inputText(activationForm("temporaryCode"))
+		@inputText(activationForm("temporaryPassword"))
 		<ul>
-			<li>@Messages("アカウントは仮登録のままです。")</li>
-			<li>@Messages("仮登録時に入力した仮登録コードと、仮登録メールに記載されている仮パスワードを入力してください。")</li>
+			<li>@Messages("ログイン用のパスワードを新たに設定してください。")</li>
 		</ul>
-		@form(routes.ActivationController.post) {
-			@CSRF.formField
-			@inputText(activationForm("emailAddress"))
-			@inputText(activationForm("temporaryCode"))
-			@inputText(activationForm("temporaryPassword"))
-			<ul>
-				<li>@Messages("ログイン用のパスワードを新たに設定してください。")</li>
-			</ul>
-			@inputPassword(activationForm("password"))
-			<input type="submit" value="@Messages("本登録する")" >
-		}
+		@inputPassword(activationForm("password"))
+		<input type="submit" value="@Messages("本登録する")" >
 	}
 }
