@@ -4,7 +4,9 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
-import controllers.PasswordUtil.TemporaryPasswordHelper;
+import controllers.ControllerHelpers.ConfigHelper;
+import controllers.ControllerHelpers.ResultHelper;
+import controllers.ControllerHelpers.TemporaryPasswordHelper;
 import models.Applicant;
 import models.EmailTemplate;
 import models.Individual;

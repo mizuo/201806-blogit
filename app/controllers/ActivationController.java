@@ -6,7 +6,9 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
-import controllers.PasswordUtil.TemporaryPasswordHelper;
+import controllers.ControllerHelpers.ConfigHelper;
+import controllers.ControllerHelpers.PasswordHelper;
+import controllers.ControllerHelpers.TemporaryPasswordHelper;
 import models.Account;
 import models.Applicant;
 import models.EmailTemplate;
@@ -17,9 +19,9 @@ import play.data.validation.Constraints.MaxLength;
 import play.data.validation.Constraints.Required;
 import play.data.validation.Constraints.Validatable;
 import play.data.validation.Constraints.Validate;
+import play.data.validation.ValidationError;
 import play.libs.mailer.Email;
 import play.libs.mailer.MailerClient;
-import play.data.validation.ValidationError;
 import play.mvc.Controller;
 import play.mvc.Result;
 
@@ -128,7 +130,7 @@ public class ActivationController extends Controller {
 			final Applicant applicant = stored.get();
 			final Account account = new Account();
 			account.loginId = applicant.emailAddress;
-			account.password = PasswordUtil.hash(password);
+			account.password = PasswordHelper.hash(password);
 			account.individual = toIndividual();
 			return account;
 		}
