@@ -3,7 +3,8 @@ package controllers;
 import org.junit.Assert;
 import org.junit.Test;
 
-import controllers.PasswordUtil.TemporaryPasswordHelper;
+import controllers.ControllerAuthHelpers.PasswordHelper;
+import controllers.ControllerAuthHelpers.TemporaryPasswordHelper;
 
 /**
  * パスワード処理のテストクラスです。
@@ -29,9 +30,9 @@ public class PasswordUtilTest {
 		Assert.assertFalse("違う仮登録コードの場合はハッシュ化した文字列も異なる。", TemporaryPasswordHelper.equal(temporaryCode + "x", password.plainTemporary, hashed));
 		Assert.assertFalse("違う仮パスワードの場合はハッシュ化した文字列も異なる。", TemporaryPasswordHelper.equal(temporaryCode, "x" + password.plainTemporary, hashed));
 		Assert.assertFalse("違う仮パスワードの場合はハッシュ化した文字列も異なる。", TemporaryPasswordHelper.equal(temporaryCode, password.plainTemporary + "x", hashed));
-		Assert.assertTrue("同じ平文パスワードならハッシュ化した文字列と同等となる。", PasswordUtil.equal(password.plain, hashed));
-		Assert.assertFalse("異なる平文パスワードの場合はハッシュ化した文字列も異なる。", PasswordUtil.equal("x" + password.plain, hashed));
-		Assert.assertFalse("異なる平文パスワードの場合はハッシュ化した文字列も異なる。", PasswordUtil.equal(password.plain + "x", hashed));
+		Assert.assertTrue("同じ平文パスワードならハッシュ化した文字列と同等となる。", PasswordHelper.equal(password.plain, hashed));
+		Assert.assertFalse("異なる平文パスワードの場合はハッシュ化した文字列も異なる。", PasswordHelper.equal("x" + password.plain, hashed));
+		Assert.assertFalse("異なる平文パスワードの場合はハッシュ化した文字列も異なる。", PasswordHelper.equal(password.plain + "x", hashed));
 		final String hashed2 = password.hash(temporaryCode + "2");
 		Assert.assertNotEquals("異なる値をハッシュ化すれば結果が異なる。", hashed, hashed2);
 		final String hashed3 = password.hash(temporaryCode);
@@ -62,10 +63,10 @@ public class PasswordUtilTest {
 	 */
 	@Test
 	public void equal() {
-		Assert.assertFalse(PasswordUtil.equal("password", "$2a$10$KSULr3dVkTqAd1Bl9mBuD.oXHhv35Wz1j0A0WwpmXbeEawLmSwEGux"));
-		Assert.assertFalse(PasswordUtil.equal("passwordx", "$2a$10$KSULr3dVkTqAd1Bl9mBuD.oXHhv35Wz1j0A0WwpmXbeEawLmSwEGu"));
-		Assert.assertTrue(PasswordUtil.equal("password", "$2a$10$KSULr3dVkTqAd1Bl9mBuD.oXHhv35Wz1j0A0WwpmXbeEawLmSwEGu"));
-		Assert.assertTrue(PasswordUtil.equal("1234", "$2a$10$3XpST0mKF96zNmmQrNKVF.xHZPTPMxLH3YMmN.SAhZZOu18gRGWTe"));
+		Assert.assertFalse(PasswordHelper.equal("password", "$2a$10$KSULr3dVkTqAd1Bl9mBuD.oXHhv35Wz1j0A0WwpmXbeEawLmSwEGux"));
+		Assert.assertFalse(PasswordHelper.equal("passwordx", "$2a$10$KSULr3dVkTqAd1Bl9mBuD.oXHhv35Wz1j0A0WwpmXbeEawLmSwEGu"));
+		Assert.assertTrue(PasswordHelper.equal("password", "$2a$10$KSULr3dVkTqAd1Bl9mBuD.oXHhv35Wz1j0A0WwpmXbeEawLmSwEGu"));
+		Assert.assertTrue(PasswordHelper.equal("1234", "$2a$10$3XpST0mKF96zNmmQrNKVF.xHZPTPMxLH3YMmN.SAhZZOu18gRGWTe"));
 	}
 
 }

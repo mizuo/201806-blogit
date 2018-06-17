@@ -1,9 +1,10 @@
 package models;
 
+import java.util.Optional;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.OneToOne;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -24,9 +25,19 @@ public class Account extends TimestampModel {
 	@NotNull
 	public String password;
 
-	/** 個人 */
+	/** 個人ID */
 	@NotNull
-	@OneToOne
-	public Individual individual;
+	@Column(unique = true)
+	public Long individualId;
+
+	/**
+	 * 引数のログインIDの登録行を取得します。
+	 * @param loginId ログインID
+	 * @return アカウント
+	 */
+	public static Optional<Account> findOneOrEmpty(String loginId) {
+		final Optional<Account> stored = db().find(Account.class).where().eq("login_id", loginId).findOneOrEmpty();
+		return stored;
+	}
 
 }

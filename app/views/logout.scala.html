@@ -1,0 +1,9 @@
+@()
+@import helper._
+@main(title=Messages("logout")) {
+	@form(routes.LogoutController.post) {
+		@CSRF.formField
+		@Messages("ログアウトします。よろしいですか？")
+		<input type="submit" value="@Messages("ログアウト")" >
+	}
+}

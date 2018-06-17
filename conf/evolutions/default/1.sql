@@ -15,18 +15,14 @@ create table individual (
   id                            bigint auto_increment not null,
   email_address                 varchar(255) not null,
   applied_at                    timestamp not null,
-  joined_at                     timestamp not null,
   created_at                    timestamp not null,
   updated_at                    timestamp not null,
+  joined_at                     timestamp not null,
   constraint pk_individual primary key (id)
 );
 
-alter table account add constraint fk_account_individual_id foreign key (individual_id) references individual (id) on delete restrict on update restrict;
-
 
 # --- !Downs
-
-alter table account drop constraint if exists fk_account_individual_id;
 
 drop table if exists account;
 

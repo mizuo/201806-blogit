@@ -1,0 +1,17 @@
+@(loginForm: Form[LoginController.LoginParameter])
+@import helper._
+@main(title=Messages("login")) {
+	@if(loginForm.hasGlobalErrors) {
+	<ul>
+		@for(error <- loginForm.globalErrors) {
+		<li>@error.format(messages())</li>
+		}
+	</ul>
+	}
+	@form(routes.LoginController.post) {
+		@CSRF.formField
+		@inputText(loginForm("loginId"))
+		@inputPassword(loginForm("password"))
+		<input type="submit" value="@Messages("ログイン")" >
+	}
+}

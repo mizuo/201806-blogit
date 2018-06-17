@@ -6,9 +6,10 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
+import auth.AuthenticationAnnotations.Anybody;
+import controllers.ControllerAuthHelpers.PasswordHelper;
+import controllers.ControllerAuthHelpers.TemporaryPasswordHelper;
 import controllers.ControllerHelpers.ConfigHelper;
-import controllers.ControllerHelpers.PasswordHelper;
-import controllers.ControllerHelpers.TemporaryPasswordHelper;
 import models.Account;
 import models.Applicant;
 import models.EmailTemplate;
@@ -55,6 +56,7 @@ public class ActivationController extends Controller {
 	 * GET アクセスを制御します。
 	 * @return アカウント本登録ページ
 	 */
+	@Anybody
 	public Result get() {
 		final Form<ActivationParameter> activationForm = formFactory.form(ActivationParameter.class);
 		return ok(views.html.activation.render(activationForm));
@@ -64,25 +66,28 @@ public class ActivationController extends Controller {
 	 * POST アクセスを制御します。
 	 * @return アカウント本登録ページ
 	 */
+	@Anybody
 	public Result post() {
 		final Form<ActivationParameter> activationForm = formFactory.form(ActivationParameter.class).bindFromRequest();
 		if (activationForm.hasErrors()) {
 			final ActivationParameter parameter = activationForm.discardingErrors().get();
-			if (parameter.stored.isPresent()) {
+			if (parameter.storedApplicant.isPresent()) {
 				return status(CONFLICT, views.html.activation.render(activationForm));
 			} else {
 				return badRequest(views.html.activation.render(activationForm));
 			}
 		} else {
 			final ActivationParameter parameter = activationForm.get();
-			if (parameter.stored.isPresent()) {
+			if (parameter.storedApplicant.isPresent()) {
+				final Individual individual = parameter.toIndividual();
+				individual.save();
 				final Account account = parameter.toAccount();
-				account.individual.save();
+				account.individualId = individual.id;
 				account.save();
-				parameter.stored.get().delete();
+				parameter.storedApplicant.get().delete();
 				// 本登録完了メールを送信する
 				final String configEmailAddress = configHelper.getConfigEmailAddress();
-				final Optional<Email> email = EmailTemplate.createActivation(configEmailAddress, account.individual.emailAddress);
+				final Optional<Email> email = EmailTemplate.createActivation(configEmailAddress, individual.emailAddress);
 				if (email.isPresent()) {
 					mailerClient.send(email.get());
 				} else {
@@ -115,11 +120,11 @@ public class ActivationController extends Controller {
 		/** パスワード */
 		@Required
 		public String password;
-		/** 申込者 */
-		Optional<Applicant> stored;
+		/** DBに登録されていた申込者 */
+		Optional<Applicant> storedApplicant;
 		/** 個人 */
-		private Individual toIndividual() {
-			final Applicant applicant = stored.get();
+		Individual toIndividual() {
+			final Applicant applicant = storedApplicant.get();
 			final Individual individual = new Individual();
 			individual.emailAddress = applicant.emailAddress;
 			individual.appliedAt = applicant.appliedAt;
@@ -127,34 +132,33 @@ public class ActivationController extends Controller {
 		}
 		/** アカウント */
 		Account toAccount() {
-			final Applicant applicant = stored.get();
+			final Applicant applicant = storedApplicant.get();
 			final Account account = new Account();
 			account.loginId = applicant.emailAddress;
 			account.password = PasswordHelper.hash(password);
-			account.individual = toIndividual();
 			return account;
 		}
-
 		/***
 		 * 申込者の認証を行います。
 		 */
 		@Override
 		public List<ValidationError> validate() {
-			this.stored = Optional.empty();
-			final List<ValidationError> errors = new ArrayList<>();
+			storedApplicant = Optional.empty();
 			// メールアドレスの一意チェックをする。
 			final Individual individual = new Individual();
 			individual.emailAddress = emailAddress;
 			if (!individual.isUsedEmailAddress()) {
 				// 申込者の認証をする。
-				this.stored = Applicant.findOneOrEmpty(emailAddress);
-				if (stored.isPresent()) {
-					final Applicant applicant = stored.get();
+				storedApplicant = Applicant.findOneOrEmpty(emailAddress);
+				if (storedApplicant.isPresent()) {
+					final Applicant applicant = storedApplicant.get();
 					if (TemporaryPasswordHelper.equal(temporaryCode, temporaryPassword, applicant.password)) {
+						// 認証OK
 						return null;
 					}
 				}
 			}
+			final List<ValidationError> errors = new ArrayList<>();
 			errors.add(new ValidationError("", "メールアドレス／仮登録コード／仮パスワードに誤りがあるか、既に登録済みです。"));
 			return errors;
 		}

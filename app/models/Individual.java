@@ -1,6 +1,7 @@
 package models;
 
 import java.util.Date;
+import java.util.Optional;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -30,11 +31,21 @@ public class Individual extends CrudModel {
 	@CreatedTimestamp
 	public Date joinedAt;
 
+	/**
+	 * 引数のIDの登録行を取得します。
+	 * @param id ID
+	 * @return 個人
+	 */
+	public static Optional<Individual> findOneOrEmpty(Long id) {
+		final Optional<Individual> stored = db().find(Individual.class).where().eq("id", id).findOneOrEmpty();
+		return stored;
+	}
+
 	/** アカウントテーブルと個人テーブルでのメールアドレス登録件数を取得するSQLです。 */
 	private static final String UNIQUE_EMAIL_ADDRESS_SQL = " SELECT COUNT(*) AS counter FROM ("
-			+ " SELECT email_address FROM individual where email_address = :emailAddress"
+			+ " SELECT email_address FROM individual WHERE email_address = :emailAddress"
 			+ " UNION ALL "
-			+ " SELECT login_id FROM account where login_id = :emailAddress"
+			+ " SELECT login_id FROM account WHERE login_id = :emailAddress"
 			+ ") A";
 
 	/**

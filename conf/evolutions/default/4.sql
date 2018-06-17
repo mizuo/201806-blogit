@@ -1,4 +1,3 @@
-
 # --- !Ups
 
 insert into email_template (code, subject, body, created_at, updated_at) values (

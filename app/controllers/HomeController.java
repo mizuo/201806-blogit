@@ -1,5 +1,6 @@
 package controllers;
 
+import auth.AuthenticationAnnotations.Anybody;
 import play.mvc.Controller;
 import play.mvc.Result;
 
@@ -14,6 +15,7 @@ public class HomeController extends Controller {
 	 * GET アクセスを制御します。
 	 * @return インデックスページ
 	 */
+	@Anybody
 	public Result index() {
 		return ok(views.html.index.render());
 	}

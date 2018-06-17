@@ -8,6 +8,10 @@ GET     /owner.html                 controllers.OwnerController.get
 POST    /owner.html                 controllers.OwnerController.post
 GET     /activation.html            controllers.ActivationController.get
 POST    /activation.html            controllers.ActivationController.post
+GET     /login.html                 controllers.LoginController.get()
+POST    /login.html                 controllers.LoginController.post()
+GET     /logout.html                controllers.LogoutController.get()
+POST    /logout.html                controllers.LogoutController.post()
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

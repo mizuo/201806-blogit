@@ -4,9 +4,10 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
+import auth.AuthenticationAnnotations.Anybody;
+import controllers.ControllerAuthHelpers.TemporaryPasswordHelper;
 import controllers.ControllerHelpers.ConfigHelper;
 import controllers.ControllerHelpers.ResultHelper;
-import controllers.ControllerHelpers.TemporaryPasswordHelper;
 import models.Applicant;
 import models.EmailTemplate;
 import models.Individual;
@@ -53,6 +54,7 @@ public class OwnerController extends Controller {
 	 * 所有者アカウントが登録済みであれば、410 GONE を応答します。
 	 * @return 所有者ページ
 	 */
+	@Anybody
 	public Result get() {
 		final String configEmailAddress = configHelper.getConfigEmailAddress();
 		final Individual individual = new Individual();
@@ -74,6 +76,7 @@ public class OwnerController extends Controller {
 	 * 処理成功した場合はアカウントの仮登録を行います。
 	 * @return 所有者ページ
 	 */
+	@Anybody
 	public Result post() {
 		final Form<OwnerParameter> ownerForm = formFactory.form(OwnerParameter.class).bindFromRequest();
 		if (ownerForm.hasErrors()) {
