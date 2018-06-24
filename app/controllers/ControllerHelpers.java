@@ -88,7 +88,7 @@ class ControllerHelpers {
 		Result gone() {
 			final String method = request.method();
 			final String uri = request.uri();
-			return status(GONE, views.html.defaultpages.notFound.render(method, uri));
+			return status(GONE, views.html.defaultpages.gone.render(method, uri));
 		}
 	}
 
