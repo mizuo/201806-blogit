@@ -5,10 +5,8 @@ import java.util.Optional;
 import javax.inject.Inject;
 
 import auth.AuthenticationAnnotations.Anybody;
-import controllers.ControllerAuthHelpers.TemporaryPasswordHelper;
 import controllers.ControllerHelpers.ConfigHelper;
 import controllers.ControllerHelpers.ResultHelper;
-import models.Applicant;
 import models.EmailTemplate;
 import models.Individual;
 import play.data.Form;
@@ -22,9 +20,9 @@ import play.mvc.Controller;
 import play.mvc.Result;
 
 /**
- * 所有者アカウント登録コントローラーです。
- * 最初のアカウントを登録するページを制御します。
- * アカウントが本登録された後はアクセス不能となります。
+ * 所有者アカウント仮登録コントローラーです。
+ * 所有者メールアドレスからアカウント仮登録を行うページを制御します。
+ * 所有者アカウントが本登録された後はアクセス不能となります。
  * @author mizuo
  */
 public class OwnerController extends Controller {
@@ -52,11 +50,11 @@ public class OwnerController extends Controller {
 	 * GET アクセスを制御します。
 	 * 所有者アカウントが登録されていない場合のみアクセス可能です。
 	 * 所有者アカウントが登録済みであれば、410 GONE を応答します。
-	 * @return 所有者ページ
+	 * @return 所有者アカウント仮登録ページ
 	 */
 	@Anybody
 	public Result get() {
-		final String configEmailAddress = configHelper.getConfigEmailAddress();
+		final String configEmailAddress = configHelper.getOwnerEmailAddress();
 		final Individual individual = new Individual();
 		individual.emailAddress = configEmailAddress;
 		if (individual.isUsedEmailAddress()) {
@@ -74,7 +72,7 @@ public class OwnerController extends Controller {
 	 * 所有者アカウントが登録されていない場合のみアクセス可能です。
 	 * 所有者アカウントが登録済みであれば、410 GONE を応答します。
 	 * 処理成功した場合はアカウントの仮登録を行います。
-	 * @return 所有者ページ
+	 * @return アカウント本登録ページ
 	 */
 	@Anybody
 	public Result post() {
@@ -82,39 +80,41 @@ public class OwnerController extends Controller {
 		if (ownerForm.hasErrors()) {
 			return badRequest(views.html.owner.render(ownerForm));
 		} else {
-			// メールアドレスの一意チェックをする。
-			final String configEmailAddress = configHelper.getConfigEmailAddress();
-			final Individual individual = new Individual();
-			individual.emailAddress = configEmailAddress;
-			if (individual.isUsedEmailAddress()) {
-				// 所有者アカウントが登録済みであれば、このページは消滅扱いとする。
-				return new ResultHelper(request()).gone();
-			} else {
-				// 仮登録コードをリクエストから抽出する。
-				final OwnerParameter parameter = ownerForm.get();
-				final String temporaryCode = parameter.temporaryCode;
-				// 仮パスワードを生成する。
-				final TemporaryPasswordHelper password = new TemporaryPasswordHelper();
-				final String hashed = password.hash(temporaryCode);
-				// 申込者
-				final Applicant applicant = Applicant.findOne(configEmailAddress);
-				applicant.password = hashed;
-				// 仮パスワードの一部をメール送信する
-				final Optional<Email> email = EmailTemplate.createOwner(configEmailAddress, password.plainTemporary);
-				if (email.isPresent()) {
-					mailerClient.send(email.get());
-				} else {
+			// 所有者メールアドレスを設定から取得する。
+			final String ownerEmailAddress = configHelper.getOwnerEmailAddress();
+			// 仮登録コードをリクエストから取得する。
+			final OwnerParameter parameter = ownerForm.get();
+			final String temporaryCode = parameter.temporaryCode;
+			// 申込者のシナリオを実行する
+			return new ApplicantController.ApplicantScenario<Result>() {
+				@Override
+				Result failedExist() {
+					// 所有者アカウントが登録済みであれば、このページは消滅扱いとする。
+					return new ResultHelper(request()).gone();
+				}
+				@Override
+				Optional<Email> createEmail(String fromEmailAddress, String toEmailAddress, String plainTemporaryPassword) {
+					final Optional<Email> email = EmailTemplate.createOwner(fromEmailAddress, plainTemporaryPassword);
+					return email;
+				}
+				@Override
+				void send(Email email) {
+					mailerClient.send(email);
+				}
+				@Override
+				Result failedEmail() {
 					return internalServerError();
 				}
-				// 登録する
-				applicant.save();
-				return redirect(routes.ActivationController.get());
-			}
+				@Override
+				Result success() {
+					return redirect(routes.ActivationController.get());
+				}
+			}.action(ownerEmailAddress, ownerEmailAddress, temporaryCode);
 		}
 	}
 
 	/**
-	 * 所有者アカウント登録の変数群です。
+	 * 所有者アカウント仮登録の変数群です。
 	 * @author mizuo
 	 */
 	public static class OwnerParameter {

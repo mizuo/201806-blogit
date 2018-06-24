@@ -43,12 +43,12 @@ public class EmailTemplate extends TimestampModel {
 	}
 
 	/**
-	 * 仮登録メールを生成します。
+	 * 所有者仮登録メールを生成します。
 	 * @param ownerEmailAddress 所有者メールアドレス
-	 * @param temporaryPassword 仮パスワード
+	 * @param plainTemporaryPassword 平分の仮パスワード
 	 * @return 仮登録メール
 	 */
-	public static Optional<Email> createOwner(String ownerEmailAddress, String temporaryPassword) {
+	public static Optional<Email> createOwner(String ownerEmailAddress, String plainTemporaryPassword) {
 		final Optional<EmailTemplate> stored = findOneOrEmpty("owner");
 		if (stored.isPresent()) {
 			final EmailTemplate template = stored.get();
@@ -56,7 +56,7 @@ public class EmailTemplate extends TimestampModel {
 					.setSubject(template.subject)
 					.setFrom(ownerEmailAddress)
 					.addTo(ownerEmailAddress)
-					.setBodyText(template.body.replaceAll(":temporaryPassword", temporaryPassword));
+					.setBodyText(template.body.replaceAll(":temporaryPassword", plainTemporaryPassword));
 			return Optional.of(email);
 		} else {
 			return Optional.empty();
@@ -65,17 +65,17 @@ public class EmailTemplate extends TimestampModel {
 
 	/**
 	 * 本登録完了メールを生成します。
-	 * @param ownerEmailAddress 所有者メールアドレス
+	 * @param fromEmailAddress Fromメールアドレス
 	 * @param individualEmailAddress 個人メールアドレス
 	 * @return 本登録完了メール
 	 */
-	public static Optional<Email> createActivation(String ownerEmailAddress, String individualEmailAddress) {
+	public static Optional<Email> createActivation(String fromEmailAddress, String individualEmailAddress) {
 		final Optional<EmailTemplate> stored = findOneOrEmpty("activation");
 		if (stored.isPresent()) {
 			final EmailTemplate template = stored.get();
 			final Email email = new Email()
 					.setSubject(template.subject)
-					.setFrom(ownerEmailAddress)
+					.setFrom(fromEmailAddress)
 					.addTo(individualEmailAddress)
 					.setBodyText(template.body);
 			return Optional.of(email);

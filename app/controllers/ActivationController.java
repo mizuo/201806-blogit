@@ -28,7 +28,7 @@ import play.mvc.Result;
 
 /**
  * アカウント本登録コントローラーです。
- * 仮登録アカウントから本登録を行うページを制御します。
+ * 申込者の本登録ページを制御します。
  * @author mizuo
  */
 public class ActivationController extends Controller {
@@ -54,7 +54,7 @@ public class ActivationController extends Controller {
 
 	/**
 	 * GET アクセスを制御します。
-	 * @return アカウント本登録ページ
+	 * @return 申込者の本登録ページ
 	 */
 	@Anybody
 	public Result get() {
@@ -64,7 +64,7 @@ public class ActivationController extends Controller {
 
 	/**
 	 * POST アクセスを制御します。
-	 * @return アカウント本登録ページ
+	 * @return 申込者の本登録ページ
 	 */
 	@Anybody
 	public Result post() {
@@ -79,25 +79,80 @@ public class ActivationController extends Controller {
 		} else {
 			final ActivationParameter parameter = activationForm.get();
 			if (parameter.storedApplicant.isPresent()) {
-				final Individual individual = parameter.toIndividual();
-				individual.save();
-				final Account account = parameter.toAccount();
-				account.individualId = individual.id;
-				account.save();
-				parameter.storedApplicant.get().delete();
-				// 本登録完了メールを送信する
-				final String configEmailAddress = configHelper.getConfigEmailAddress();
-				final Optional<Email> email = EmailTemplate.createActivation(configEmailAddress, individual.emailAddress);
-				if (email.isPresent()) {
-					mailerClient.send(email.get());
-				} else {
-					return internalServerError();
-				}
-				return redirect(routes.HomeController.index());
+				final String ownerEmailAddress = configHelper.getOwnerEmailAddress();
+				final Applicant applicant = parameter.storedApplicant.get();
+				final String hashedPassword = PasswordHelper.hash(parameter.password);
+				// アカウント本登録のシナリオを実行する
+				return new ActivationScenario<Result>() {
+					@Override
+					void send(Email email) {
+						mailerClient.send(email);
+					}
+					@Override
+					Result failedEmail() {
+						return internalServerError();
+					}
+					@Override
+					Result success() {
+						return redirect(routes.HomeController.index());
+					}
+				}.action(ownerEmailAddress, applicant, hashedPassword);
 			} else {
 				return internalServerError();
 			}
 		}
+	}
+
+	/**
+	 * アカウント本登録のシナリオです。
+	 * @author mizuo
+	 */
+	static abstract class ActivationScenario<T> {
+		/**
+		 * 申込者からアカウントの本登録処理を行います。
+		 * 処理成功時に申込者のメールアドレスに本登録完了メールが送信されます。
+		 * また、処理成功時は申込者の情報が削除されます。
+		 * @param fromEmailAddress Fromメールアドレス
+		 * @param applicant 申込者
+		 * @param hashedPassword ハッシュ化したパスワード
+		 * @return
+		 */
+		T action(String fromEmailAddress, Applicant applicant, String hashedPassword) {
+			final Individual individual = toIndividual(applicant);
+			individual.save();
+			final Account account = toAccount(applicant, hashedPassword);
+			account.individualId = individual.id;
+			account.save();
+			applicant.delete();
+			// 本登録完了メールを送信する
+			final Optional<Email> email = EmailTemplate.createActivation(fromEmailAddress, individual.emailAddress);
+			if (email.isPresent()) {
+				send(email.get());
+			} else {
+				return failedEmail();
+			}
+			return success();
+		}
+		/** 個人に変換します。 */
+		Individual toIndividual(Applicant applicant) {
+			final Individual individual = new Individual();
+			individual.emailAddress = applicant.emailAddress;
+			individual.appliedAt = applicant.appliedAt;
+			return individual;
+		}
+		/** アカウントに変換します。 */
+		Account toAccount(Applicant applicant, String hashedPassword) {
+			final Account account = new Account();
+			account.loginId = applicant.emailAddress;
+			account.password = hashedPassword;
+			return account;
+		}
+		/** 本登録完了メールを送信します。 */
+		abstract void send(Email email);
+		/** メールが生成できなかった場合の結果を返します。 */
+		abstract T failedEmail();
+		/** 処理が成功した場合の結果を返します。 */
+		abstract T success();
 	}
 
 	/**
@@ -122,22 +177,6 @@ public class ActivationController extends Controller {
 		public String password;
 		/** DBに登録されていた申込者 */
 		Optional<Applicant> storedApplicant;
-		/** 個人 */
-		Individual toIndividual() {
-			final Applicant applicant = storedApplicant.get();
-			final Individual individual = new Individual();
-			individual.emailAddress = applicant.emailAddress;
-			individual.appliedAt = applicant.appliedAt;
-			return individual;
-		}
-		/** アカウント */
-		Account toAccount() {
-			final Applicant applicant = storedApplicant.get();
-			final Account account = new Account();
-			account.loginId = applicant.emailAddress;
-			account.password = PasswordHelper.hash(password);
-			return account;
-		}
 		/***
 		 * 申込者の認証を行います。
 		 */

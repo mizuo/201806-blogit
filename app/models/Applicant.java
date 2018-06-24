@@ -46,11 +46,11 @@ public class Applicant extends Model {
 
 	/**
 	 * 引数のメールアドレスの登録行を取得します。
-	 * 未登録の場合は引数のメールアドレスをセットした申込者を返します。
+	 * 未登録の場合は引数のメールアドレスをセットした申込者を生成して返します。
 	 * @param emailAddress メールアドレス
 	 * @return 申込者
 	 */
-	public static Applicant findOne(String emailAddress) {
+	public static Applicant findOneOrCreate(String emailAddress) {
 		final Optional<Applicant> stored = findOneOrEmpty(emailAddress);
 		if (stored.isPresent()) {
 			return stored.get();
